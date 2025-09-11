@@ -1,111 +1,96 @@
-from fastapi import FastAPI
-
-from pydantic import BaseModel
-
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+from bson import ObjectId
+from bson.errors import InvalidId
 from db import adverts_collection
+from typing import List
+from datetime import date
 
 app = FastAPI()
- 
 
-class Adverts(BaseModel):
+class Advert(BaseModel):
+    job_title: str
+    job_description: str
+    category: str
+    salaries: float
+    image: str
+    skills: List[str]
+    created_at: str = Field(default_factory=lambda: date.today().isoformat())
 
-    Title: str
 
-    Description: str
+@app.post("/add_job")
+def add_job(advert: Advert):
+    try:
+        result = adverts_collection.insert_one(advert.dict())
+        return {"message": "Advert added successfully", "job_id": str(result.inserted_id)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    Category: str
+@app.get("/view_job")
+def view_job():
+    try:
+        jobs = list(adverts_collection.find())
+        for job in jobs:
+            job["_id"] = str(job["_id"])
+        return {"adverts": jobs}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    Salary: float
+@app.get("/find_job/{find_job}")
+def find_job(find_job: str):
+    try:
+        # Try to find by ObjectId first
+        try:
+            advert = adverts_collection.find_one({"_id": ObjectId(find_job)})
+            if advert:
+                advert["_id"] = str(advert["_id"])
+                return {"advert": advert}
+        except (InvalidId, ValueError):
+            pass
 
- 
-# endpoint for advert management
+        # Search by text fields with partial matching
+        query = {"$or": [
+            {"job_title": {"$regex": find_job, "$options": "i"}},
+            {"job_description": {"$regex": find_job, "$options": "i"}},
+            {"category": {"$regex": find_job, "$options": "i"}}
+        ]}
+        
+        adverts = list(adverts_collection.find(query))
+        
+        if adverts:
+            for advert in adverts:
+                advert["_id"] = str(advert["_id"])
+            return {"adverts": adverts}
 
-# User Flow
+        return {"message": "No jobs found"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/", tags=["Home"])
 
-def home_page():
+# delete job advert endpoint
+@app.delete("/delete_job/{job_id}")
+def delete_job(job_id: str):
+    try:
+        result = adverts_collection.delete_one({"_id": ObjectId(job_id)})
+        if result.deleted_count:
+            return {"message": "Job advert deleted successfully"}
+        return {"message": "Job advert not found"}
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid ObjectId format")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    return {"message": "Welcome to SkillsBridge advertisement management platform"}
 
- 
-# add advevrt endpoint
-
-@app.post("/add_advert")
-
-def add_advert(adverts: Adverts):
-
-    adverts_collection.insert_one(adverts.dict())
-
-    return {"message": "Advert added successfully"}
-
- 
-
-# view advert endpoint
-
-@app.get("/view_advert")
-
-def view_advert():
-
-    adverts = list(adverts_collection.find({}, {"_id": 0}))
-
-    return {"adverts": adverts}
-
- 
-
-# find advert endpoint
-
-@app.get("/find_advert/{title}")
-
-def find_advert(title: str):
-
-    advert = adverts_collection.find_one({"Title": title}, {"_id": 0})
-
-    if advert:
-
-        return {"advert": advert}
-
-    else:
-
-        return {"message": "Advert not found"}
-
- 
-# delete advert endpoint
-
-@app.delete("/delete_advert/{id}")
-
-def delete_advert(id: int):
-
-    result = adverts_collection.delete_one({"Title": id})
-
-    if result.deleted_count:
-
-        return {"message": "Advert deleted successfully"}
-
-    else:
-
-        return {"message": "Advert not found"}
-
- 
-
-# update advert endpoint
-
-@app.put("/update_advert/{id}")
-
-def update_advert(id: int, adverts: Adverts):
-
-    result = adverts_collection.update_one({"id": id}, {"$set": adverts.dict()})
-
-    if result.modified_count:
-
-        return {"message": "Advert updated successfully"}
-
-    else:
-
-        return {"message": "Advert not found or no changes made"}
-
- 
-
- 
-
- 
+# update job advert endpoint
+@app.put("/update_job/{job_id}")
+def update_job(job_id: str, advert: Advert):
+    try:
+        result = adverts_collection.update_one({"_id": ObjectId(job_id)}, {"$set": advert.dict()})
+        if result.modified_count:
+            return {"message": "Job advert updated successfully"}
+        return {"message": "Job advert not found or no changes made"}
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid ObjectId format")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
