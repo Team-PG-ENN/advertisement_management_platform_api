@@ -12,3 +12,5 @@ advertisement_management_platform_api = mongo_client["advertisement_management_p
 
 # Pick a collection to operate on
 adverts_collection = advertisement_management_platform_api["adverts"]
+
+vendors_collection = advertisement_management_platform_api["vendors"]
