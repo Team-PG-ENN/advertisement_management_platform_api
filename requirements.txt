@@ -1,5 +1,5 @@
-fastapi
-uvicorn
+Fastapi[standard]
 pymongo
-python-dotenv
-cloudinary
+bcrypt
+PyJWT
+Cloudinary
