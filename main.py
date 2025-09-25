@@ -28,4 +28,3 @@ app.include_router(adverts_router)
 
 
 
-
