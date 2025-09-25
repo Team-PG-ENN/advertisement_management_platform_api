@@ -1,14 +1,16 @@
 from pymongo import MongoClient
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
 
 load_dotenv()
 
-# Connect to Mongo Atlas Cluster
+#connect to mongo atlas cluster
 mongo_client = MongoClient(os.getenv("MONGO_URI"))
 
-# Access database
+#assess database
+
 advertisement_management_platform_api = mongo_client["advertisement_management_platform_api"]
 
-# Pick a collection to operate on
-adverts_collection = advertisement_management_platform_api["adverts"]
+#pick collection to operate on 
+adverts_collection = adverts_collection_api["advert"]
+vendors_collection = advertisement_management_platform_api["vendors"]
