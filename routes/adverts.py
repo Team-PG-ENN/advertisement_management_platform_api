@@ -106,6 +106,43 @@ def find_job(job_title="", job_description="", category="", limit=10, skip=0):
         return {"message": "No jobs found"}
 
 
+@adverts_router.get("/jobs/{job_id}/similar", tags=["Adverts"])
+def get_similar_jobs(job_id: str, limit: int = 10, skip: int = 0):
+    # Validate job_id
+    if not ObjectId.is_valid(job_id):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid MongoDB ObjectId received!"
+        )
+    # Get the reference job
+    advert = adverts_collection.find_one({"_id": ObjectId(job_id)})
+    if not advert:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job advert not found!"
+        )
+
+    # Find similar jobs based on category (and optionally skills)
+    similar_adverts_cursor = adverts_collection.find(
+        filter={
+            "$or": [
+                {"category": {"$regex": advert.get("category", ""), "$options": "i"}},
+                {"_id": {"$ne": ObjectId(job_id)}},  # Exclude the original job
+            ]
+        },
+        limit=int(limit),
+        skip=int(skip),
+    )
+
+    # Convert cursor to list with Mongo _id replaced
+    similar_adverts = list(map(replace_mongo_id, similar_adverts_cursor))
+
+    return {"data": similar_adverts, "count": len(similar_adverts)}
+
+
+
+
+
 # delete job advert endpoint
 @adverts_router.delete(
     "/advert/{job_id}",
