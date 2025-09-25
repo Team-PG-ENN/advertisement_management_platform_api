@@ -9,7 +9,8 @@ mongo_client = MongoClient(os.getenv("MONGO_URI"))
 
 #assess database
 
-adverts_collection_db = mongo_client["adverts_collection_db"]
+advertisement_management_platform_api = mongo_client["advertisement_management_platform_api"]
 
 #pick collection to operate on 
-adverts_collection = adverts_collection_db["advert"]
+adverts_collection = adverts_collection_api["advert"]
+vendors_collection = advertisement_management_platform_api["vendors"]

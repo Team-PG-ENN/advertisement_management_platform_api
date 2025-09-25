@@ -1,2 +1,5 @@
-Fastapi[standard]
+fastapi
+uvicorn
 pymongo
+python-dotenv
+cloudinary
