@@ -14,7 +14,6 @@ vendors_router = APIRouter()
 
 
 class UserRole(str, Enum):
-    ADMIN = "admin"  # can do everything
     COMPANY = "company"
     RECRUITER = "recruiter"
 
