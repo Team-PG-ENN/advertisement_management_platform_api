@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
-from routes.vendors import vendors_router
+from routes.users import users_router
 from routes.adverts import adverts_router
 import os
 import cloudinary
@@ -22,7 +22,7 @@ def home_page():
 
 
 #include routers
-app.include_router(vendors_router)
+app.include_router(users_router)
 app.include_router(adverts_router)
 
 
