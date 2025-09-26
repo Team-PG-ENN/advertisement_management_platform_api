@@ -22,7 +22,7 @@ def post_job(
     category: Annotated[str, Form()],
     salaries: Annotated[float, Form()],
     skills: Annotated[str, Form()],
-    flyer: Annotated[UploadFile, File()],
+    image: Annotated[UploadFile, File()],
     user_id: Annotated[str, Depends(is_authenticated)],
      
 ):
@@ -43,7 +43,7 @@ def post_job(
             detail=f"Advert with {job_title}  and {user_id} already exist.",
         )
     # Upload flyer to cloudinary and get secure URL
-    upload_result = cloudinary.uploader.upload(flyer.file)
+    upload_result = cloudinary.uploader.upload(image.file)
     print(upload_result)
     # Insert advert into collection
     adverts_collection.insert_one(
@@ -53,7 +53,7 @@ def post_job(
             "category": category,
             "salaries": salaries,
             "skills": skills,
-            "flyer": upload_result["secure_url"],
+            "image": upload_result["secure_url"], 
             "owner": user_id,
         }
     )
@@ -61,7 +61,7 @@ def post_job(
     return {
         "message": "Advert added successfully",
         "owner": user_id,
-        "flyer": upload_result
+        "image": upload_result
     }
 
 
