@@ -87,23 +87,57 @@ def view_all_jobs(job_title="", job_description="", category="", limit=10, skip=
 
 
 # find a single job advert
-@adverts_router.get("/find_job/{find_job}", tags=["Adverts"])
-def find_job(job_title="", job_description="", category="", limit=10, skip=0):
-    advert = adverts_collection.find_one(
+@adverts_router.get("/find_job/{job_id}", tags=["Adverts"])
+def find_job(job_id: str):
+     if not ObjectId.is_valid(job_id):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid job ID format!"
+        )
+     advert = adverts_collection.find_one({"_id": ObjectId(job_id)})
+     if advert:
+        return {"advert": replace_mongo_id(advert)}  # convert ObjectId to string
+     else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+
+@adverts_router.get("/jobs/{job_id}/similar", tags=["Adverts"])
+def get_similar_jobs(job_id: str, limit: int = 10, skip: int = 0):
+    # Validate job_id
+    if not ObjectId.is_valid(job_id):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid MongoDB ObjectId received!"
+        )
+    # Get the reference job
+    advert = adverts_collection.find_one({"_id": ObjectId(job_id)})
+    if not advert:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job advert not found!"
+        )
+
+    # Find similar jobs based on category (and optionally skills)
+    similar_adverts_cursor = adverts_collection.find(
         filter={
             "$or": [
-                {"title": {"$regex": job_title, "$options": "i"}},
-                {"description": {"$regex": job_description, "$options": "i"}},
-                {"category": {"$regex": category, "$options": "i"}},
+                {"category": {"$regex": advert.get("category", ""), "$options": "i"}},
+                {"_id": {"$ne": ObjectId(job_id)}},  # Exclude the original job
             ]
         },
         limit=int(limit),
         skip=int(skip),
     )
-    if advert:
-        return {"advert": advert}
-    else:
-        return {"message": "No jobs found"}
+
+    # Convert cursor to list with Mongo _id replaced
+    similar_adverts = list(map(replace_mongo_id, similar_adverts_cursor))
+
+    return {"data": similar_adverts, "count": len(similar_adverts)}
+
+
+
 
 
 # delete job advert endpoint
