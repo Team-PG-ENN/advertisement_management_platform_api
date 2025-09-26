@@ -8,7 +8,7 @@ genai_router = APIRouter(tags=["AI Features"])
 # Configure Gemini API (key set in main.py)
 try:
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-1.5-flash-002')
 except Exception as e:
     raise ValueError(f"Failed to configure Gemini API: {e}")
 

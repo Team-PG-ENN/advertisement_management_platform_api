@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 from routes.users import users_router
 from routes.adverts import adverts_router
-from routes.adverts import genai_router
+from routes.genai import genai_router
 import os
 import cloudinary
 

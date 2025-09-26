@@ -3,3 +3,5 @@ pymongo
 bcrypt
 PyJWT
 Cloudinary
+google-genai
+google-generativeai
