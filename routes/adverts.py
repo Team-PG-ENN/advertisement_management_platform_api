@@ -67,7 +67,7 @@ def post_job(
 
 # view all advert endpoint
 @adverts_router.get(
-    "/job", tags=["Adverts"]
+    "/job", tags=["adverts"]
 )
 def view_all_jobs(job_title="", job_description="", category="", limit=10, skip=0):
     # Get all advert from database
@@ -87,7 +87,7 @@ def view_all_jobs(job_title="", job_description="", category="", limit=10, skip=
 
 
 # find a single job advert
-@adverts_router.get("/find_job/{job_id}", tags=["Adverts"])
+@adverts_router.get("/find_job/{job_id}", tags=["adverts"])
 def find_job(job_id: str):
      if not ObjectId.is_valid(job_id):
         raise HTTPException(
@@ -103,7 +103,7 @@ def find_job(job_id: str):
             detail="Job not found"
         )
 
-@adverts_router.get("/jobs/{job_id}/similar", tags=["Adverts"])
+@adverts_router.get("/jobs/{job_id}/similar", tags=["adverts"])
 def get_similar_jobs(job_id: str, limit: int = 10, skip: int = 0):
     # Validate job_id
     if not ObjectId.is_valid(job_id):
@@ -143,7 +143,7 @@ def get_similar_jobs(job_id: str, limit: int = 10, skip: int = 0):
 # delete job advert endpoint
 @adverts_router.delete(
     "/advert/{job_id}",
-    dependencies=[Depends(has_roles("company"))], tags=["Adverts"]
+    dependencies=[Depends(has_roles("company"))], tags=["adverts"]
 )
 def delete_job(job_id, user_id: Annotated[str, Depends(is_authenticated)]):
     # check if event_id id valid in mongo id
@@ -161,7 +161,7 @@ def delete_job(job_id, user_id: Annotated[str, Depends(is_authenticated)]):
 
 # update job advert endpoint
 @adverts_router.put(
-    "/advert/{job_id}", dependencies=[Depends(has_roles("company"))], tags=["Adverts"]
+    "/advert/{job_id}", dependencies=[Depends(has_roles("company"))], tags=["adverts"]
 )
 def update_job(
     job_id,
@@ -196,6 +196,6 @@ def update_job(
             }
         ),
     )
-    return {"message": "Advert replaced successfully"}
+    return {"message": "advert replaced successfully"}
 
     
