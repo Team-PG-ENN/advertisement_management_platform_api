@@ -14,7 +14,7 @@ adverts_router = APIRouter()
 
 # add advert endpoint
 @adverts_router.post(
-    "/add_job", dependencies=[Depends(has_roles("company"))], tags=["Adverts"]
+    "/add_job", dependencies=[Depends(has_roles("company"))], tags=["adverts"]
 )
 def post_job(
     job_title: Annotated[str, Form()],
